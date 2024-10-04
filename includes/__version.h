@@ -31,14 +31,4 @@
 
 #endif
 
-// macro __restrict
-
-// the restrict keyword was added in C99
-// the macro contains restrict if v. C99+ otherwise nothing
-
-#define __restrict
-#ifdef  __C99
-#define __restrict restrict
-#endif
-
 #endif // header guard
