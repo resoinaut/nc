@@ -7,14 +7,20 @@
 
 void errorf(const char *error, ...)
 {
+	#define RED     "\x1b[31m"
+	#define DEFAULT "\x1b[39m"
+
 	va_list  args;
 	va_start(args, error);
 
-	fprintf (stderr, "\n\x1b[31merror:\x1b[39m ");
+	fprintf (stderr, "\n" RED "error:" DEFAULT " ");
 	vfprintf(stderr, error, args);
 	putc    ('\n', stderr);
 
 	va_end(args);
+
+	#undef RED
+	#undef DEFAULT
 }
 
 int main(int argc, char *argv[])
@@ -22,24 +28,30 @@ int main(int argc, char *argv[])
 	if (argc < 2 || argc > 2)
 	{
 		errorf("expected 1 argument and received %i", argc - 1);
-
 		return EXIT_FAILURE;
 	}
 
-	const char *filename = argv[1];
-
-	FILE *file = fopen(filename, "r");
+	FILE *file = fopen(argv[1], "r");
 
 	if (file == NULL)
 	{
 		const char *desc = strerror(errno);
-		errorf("failure opening source file: %c%s", tolower(desc[0]), &desc[1]);
+		errorf("failure opening source file\n[%c%s]", tolower(desc[0]), &desc[1]);
 
 		return EXIT_FAILURE;
 	}
 
-	printf("Success!");
-	fclose(file);
+	// ...
+
+	if (fclose(file))
+	{
+		const char *desc = strerror(errno);
+		errorf("failure closing source file\n[%c%s]", tolower(desc[0]), &desc[1]);
+
+		return EXIT_FAILURE;
+	}
+
+	printf("\nSuccess!\n");
 
 	return EXIT_SUCCESS;
 }

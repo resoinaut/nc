@@ -10,14 +10,14 @@
 #include "string.h"
 #include "windows.h"
 
+// format: const char *         until C99
+// format: const char *restrict since C99
+
 #define __restrict
 
 #ifdef  __C99
 #define __restrict restrict
 #endif
-
-// format: const char *         until C99
-// format: const char *restrict since C99
 
 int printf(const char *__restrict format, ...)
 {
