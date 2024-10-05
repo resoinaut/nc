@@ -3,6 +3,7 @@
 #ifndef _STDIO_H
 #define _STDIO_H
 
+#include "__null.h"
 #include "__size_t.h"
 #include "__version.h"
 
