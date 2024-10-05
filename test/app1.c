@@ -1,5 +1,3 @@
-// temporary test program
-
 #include "includes/stdio.h"
 
 int main(void)

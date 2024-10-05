@@ -1,12 +1,20 @@
 #pragma once
 
+#include <string.h>  // strlen
+#include <stdbool.h> // bool true false
+
 #include "vector.h" // DECLARE_VECTOR_OF
 
 DECLARE_VECTOR_OF(char)
 
-#define String        Vector_char
+typedef Vector_char String;
 
-#define String_init   Vector_char_init
-#define String_deinit Vector_char_deinit
-#define String_resize Vector_char_resize
-#define String_append Vector_char_append
+void String_init  (String *string);
+void String_deinit(String *string);
+
+bool String_resize(String *string);
+bool String_append(String *string, char item);
+
+// extra methods
+
+bool String_eq(const String *string_l, const char *string_r);

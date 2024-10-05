@@ -1,4 +1,5 @@
 // TODO: investigate using C23 nullptr instead of NULL across all files
+// TODO: investigate using C99 restrict where applicable across all files
 
 #include <ctype.h>  // tolower
 #include <errno.h>  // errno
@@ -31,7 +32,62 @@ int main(int argc, char *argv[])
 	Vector_Token tokens;
 	Vector_Token_init  (&tokens);
 
-	tokenize(&tokens, file);
+	if (tokenize(&tokens, file))
+	{
+		Vector_Token_deinit(&tokens);
+		return EXIT_FAILURE;
+	}
+
+	// temporary
+
+	for (size_t i = 0; i < tokens.length; i++)
+	{
+		Token token = tokens.array[i];
+
+		putchar('\n');
+
+		switch (token.kind)
+		{
+		case Token_Kind_ident:
+			printf("ident %.*s", token.data.length, token.data.array);
+			break;
+		case Token_Kind_keywd_int:
+			printf("keywd int");
+			break;
+		case Token_Kind_keywd_void:
+			printf("keywd void");
+			break;
+		case Token_Kind_keywd_return:
+			printf("keywd return");
+			break;
+		case Token_Kind_intlt:
+			printf("intlt %.*s", token.data.length, token.data.array);
+			break;
+		case Token_Kind_strlt:
+			printf("strlt %.*s", token.data.length, token.data.array);
+			break;
+		case Token_Kind_semic:
+			printf("delim ;");
+			break;
+		case Token_Kind_curly_opened:
+			printf("delim {");
+			break;
+		case Token_Kind_curly_closed:
+			printf("delim }");
+			break;
+		case Token_Kind_paren_opened:
+			printf("delim (");
+			break;
+		case Token_Kind_paren_closed:
+			printf("delim )");
+			break;
+		default:
+			printf("unrecognised token");
+			break;
+		}
+	}
+
+	putchar('\n');
 
 	Vector_Token_deinit(&tokens);
 

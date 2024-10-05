@@ -41,6 +41,7 @@
 				return true;                                                           \
 		                                                                               \
 		vector->array[vector->length++] = item;                                        \
+		return false;                                                                  \
 	}                                                                                  \
 
 // ! NONITERATIVE VECTOR METHODS DONT CALL CONSTRUCTORS OR

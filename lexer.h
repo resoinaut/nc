@@ -6,7 +6,7 @@
 #include "utilities/string.h" // String
 #include "utilities/vector.h" // DECLARE_VECTOR_OF
 
-typedef enum
+typedef enum Token_Kind
 {
 	Token_Kind_ident,         // contains data
 
@@ -32,7 +32,7 @@ typedef enum
 	Token_Kind_paren_closed,  // )
 } Token_Kind;
 
-typedef struct
+typedef struct Token
 {
 	String     data;
 	Token_Kind kind;
