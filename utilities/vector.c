@@ -33,6 +33,15 @@
 		                                                                               \
 		return false;                                                                  \
 	}                                                                                  \
+	                                                                                   \
+	bool Vector_##T##_append(Vector_##T *vector, const T item)                         \
+	{                                                                                  \
+		if (vector->length == vector->capacity)                                        \
+			if (Vector_##T##_resize(vector))                                           \
+				return true;                                                           \
+		                                                                               \
+		vector->array[vector->length++] = item;                                        \
+	}                                                                                  \
 
 // ! NONITERATIVE VECTOR METHODS DONT CALL CONSTRUCTORS OR
 // ! DESTRUCTORS ON IT'S ITEMS
@@ -49,15 +58,6 @@
 		                                                       \
 		vector->length   = 0;                                  \
 		vector->capacity = 0;                                  \
-	}                                                          \
-	                                                           \
-	bool Vector_##T##_append(Vector_##T *vector, const T item) \
-	{                                                          \
-		if (vector->length == vector->capacity)                \
-			if (Vector_##T##_resize(vector))                   \
-				return true;                                   \
-		                                                       \
-		vector->array[vector->length++] = item;                \
 	}                                                          \
 
 // ! IS_ITERATIVE VECTOR METHODS CALL CONSTRUCTORS AND
@@ -78,16 +78,6 @@
 		                                                       \
 		vector->length   = 0;                                  \
 		vector->capacity = 0;                                  \
-	}                                                          \
-	                                                           \
-	bool Vector_##T##_append(Vector_##T *vector, const T item) \
-	{                                                          \
-		if (vector->length == vector->capacity)                \
-			if (Vector_##T##_resize(vector))                   \
-				return true;                                   \
-			                                                   \
-		vector->array[vector->length] = item;                  \
-		T##_init(&vector->array[vector->length++]);            \
 	}                                                          \
 
 // ! GENERIC VECTOR DEFINITIONS

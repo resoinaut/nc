@@ -32,6 +32,24 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 		if (isalpha(ch) || ch == '_')
 		{
 			Token token;
+			Token_init(&token);
+
+			String_append(&token.data, ch);
+
+			while ((ch = getc(file)) != EOF)
+			{
+				if (!isalnum(ch) && ch != '_')
+				{
+					ungetc(ch, file);
+					break;
+				}
+
+				String_append(&token.data, ch);
+			}
+
+			Vector_Token_append(&tokens, token);
+
+			continue;
 		}
 
 		// handle int literals
