@@ -10,8 +10,7 @@
 
 #include "../error.h" // errorf
 
-#define DEFINE_VECTOR_OF(T)                                                            \
-	                                                                                   \
+#define DEFINE_IS_UNIVERSAL_VECTOR_METHODS(T)                                          \
 	void Vector_##T##_init  (Vector_##T *vector)                                       \
 	{                                                                                  \
 		vector->array    = NULL;                                                       \
@@ -34,27 +33,69 @@
 		                                                                               \
 		return false;                                                                  \
 	}                                                                                  \
-	                                                                                   \
-	void Vector_##T##_deinit(Vector_##T *vector)                                       \
-	{                                                                                  \
-		free(vector->array);                                                           \
-		                                                                               \
-		vector->length   = 0;                                                          \
-		vector->capacity = 0;                                                          \
-	}                                                                                  \
-	                                                                                   \
-	bool Vector_##T##_append(Vector_##T *vector, T item)                               \
-	{                                                                                  \
-		if (vector->length == vector->capacity)                                        \
-			if (Vector_##T##_resize(vector))                                           \
-				return true;                                                           \
-		                                                                               \
-		vector->array[vector->length++] = item;                                        \
-	}                                                                                  \
 
-// ! GENERIC VECTOR DEFINITIONS.
+// ! NONITERATIVE VECTOR METHODS DONT CALL CONSTRUCTORS OR
+// ! DESTRUCTORS ON IT'S ITEMS
 
-#include "../lexer.h"   // Token
+// ! USED IN VECTORS OF PRIMITIVE DATATYPES AND CLASSES WITHOUT
+// ! CONSTRUCTORS AND DESTRUCTORS
 
-DEFINE_VECTOR_OF(char ) // string.h
-DEFINE_VECTOR_OF(Token)
+// ! eg. DEFINE_NONITERATIVE_VECTOR_METHODS(int)
+
+#define DEFINE_NONITERATIVE_VECTOR_METHODS(T)                  \
+	void Vector_##T##_deinit(Vector_##T *vector)               \
+	{                                                          \
+		free(vector->array);                                   \
+		                                                       \
+		vector->length   = 0;                                  \
+		vector->capacity = 0;                                  \
+	}                                                          \
+	                                                           \
+	bool Vector_##T##_append(Vector_##T *vector, const T item) \
+	{                                                          \
+		if (vector->length == vector->capacity)                \
+			if (Vector_##T##_resize(vector))                   \
+				return true;                                   \
+		                                                       \
+		vector->array[vector->length++] = item;                \
+	}                                                          \
+
+// ! IS_ITERATIVE VECTOR METHODS CALL CONSTRUCTORS AND
+// ! DESTRUCTORS ON IT'S ITEMS
+
+// ! USED IN VECTORS OF CLASSES THAT USE CONSTRUCTORS AND
+// ! DESTRUCTORS
+
+// ! eg. DEFINE_IS_ITERATIVE_VECTOR_METHODS(Token)
+
+#define DEFINE_IS_ITERATIVE_VECTOR_METHODS(T)                  \
+	void Vector_##T##_deinit(Vector_##T *vector)               \
+	{                                                          \
+		for (size_t i = 0; i < vector->length; i++)            \
+			T##_deinit(&vector->array[i]);                     \
+		                                                       \
+		free(vector->array);                                   \
+		                                                       \
+		vector->length   = 0;                                  \
+		vector->capacity = 0;                                  \
+	}                                                          \
+	                                                           \
+	bool Vector_##T##_append(Vector_##T *vector, const T item) \
+	{                                                          \
+		if (vector->length == vector->capacity)                \
+			if (Vector_##T##_resize(vector))                   \
+				return true;                                   \
+			                                                   \
+		vector->array[vector->length] = item;                  \
+		T##_init(&vector->array[vector->length++]);            \
+	}                                                          \
+
+// ! GENERIC VECTOR DEFINITIONS
+
+#include "../lexer.h"                     // Token
+
+DEFINE_IS_UNIVERSAL_VECTOR_METHODS(char ) // for string.h
+DEFINE_NONITERATIVE_VECTOR_METHODS(char )
+
+DEFINE_IS_UNIVERSAL_VECTOR_METHODS(Token)
+DEFINE_IS_ITERATIVE_VECTOR_METHODS(Token)

@@ -1,12 +1,23 @@
-#include "lexer.h"   // header
+#include "lexer.h"            // header
 
-#include <ctype.h>   // isalpha isalnum
-#include <errno.h>   // errno
-#include <stdio.h>   // EOF FILE getc
-#include <string.h>  // strerror
-#include <stdbool.h> // bool true false
+#include <ctype.h>            // isalpha isalnum
+#include <errno.h>            // errno
+#include <stdio.h>            // EOF FILE getc
+#include <string.h>           // strerror
+#include <stdbool.h>          // bool true false
 
-#include "utilities/string.h" // String
+#include "error.h"            // errorf
+#include "utilities/string.h" // String String_init String_deinit
+
+void Token_init  (Token *token)
+{
+	String_init  (&token->data);
+}
+
+void Token_deinit(Token *token)
+{
+	String_deinit(&token->data);
+}
 
 bool tokenize(Vector_Token *tokens, FILE *file)
 {
@@ -19,7 +30,9 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 		// handle identifiers
 
 		if (isalpha(ch) || ch == '_')
-		{}
+		{
+			Token token;
+		}
 
 		// handle int literals
 
