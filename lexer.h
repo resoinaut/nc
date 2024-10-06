@@ -4,7 +4,7 @@
 #include <stdbool.h>          // bool
 
 #include "utilities/string.h" // String
-#include "utilities/vector.h" // DECLARE_VECTOR_OF
+#include "utilities/vector.h" // DECLARE_DEVELOPED_VECTOR_T
 
 typedef enum Token_Kind
 {
@@ -38,9 +38,10 @@ typedef struct Token
 	Token_Kind kind;
 } Token;
 
-void Token_init  (Token *token);
-void Token_deinit(Token *token);
+void Token_init  (Token *this);
+void Token_deinit(Token *this);
+bool Token_eq    (const Token *this, const Token *token);
 
-DECLARE_VECTOR_OF(Token)
+DECLARE_DEVELOPED_VECTOR_T(Token)
 
 bool tokenize(Vector_Token *tokens, FILE *file);

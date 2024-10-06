@@ -8,14 +8,22 @@
 #include <stdlib.h> // EXIT_SUCCESS EXIT_FAILURE
 #include <string.h> // strerror
 
-#include "error.h"  // errorf
-#include "lexer.h"  // tokenize
+#include "lexer.h"   // tokenize
+#include "output.h"  // errorf shellf Vector_int Vector_int_init Vector_int_append Vector_int_deinit
 
 int main(int argc, char *argv[])
 {
 	if (argc < 2 || argc > 2)
 	{
+		Vector_int indices;
+		Vector_int_init  (&indices);
+		Vector_int_append(&indices, 0);
+
 		errorf("expected 1 argument and received %i", argc - 1);
+		shellf(argc, argv, &indices, Shell_Mark_other_indices);
+
+		Vector_int_deinit(&indices);
+
 		return EXIT_FAILURE;
 	}
 

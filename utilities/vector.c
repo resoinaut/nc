@@ -1,92 +1,164 @@
-#include "vector.h"   // header
+// !
+// ! ALL VECTOR DECLARATIONS MUST ALSO BE DECLARED IN vector.h
+// !
 
-#include <ctype.h>    // tolower
-#include <errno.h>    // errno
-#include <locale.h>   // NULL
-#include <stddef.h>   // size_t
-#include <stdlib.h>   // realloc free
-#include <string.h>   // strerror
-#include <stdbool.h>  // bool true false
+#include "vector.h"    // header
 
-#include "../error.h" // errorf
+#include <ctype.h>     // tolower
+#include <errno.h>     // errno
+#include <locale.h>    // NULL
+#include <stddef.h>    // size_t
+#include <stdlib.h>    // realloc free
+#include <string.h>    // strerror
+#include <stdbool.h>   // bool true false
 
-#define DEFINE_IS_UNIVERSAL_VECTOR_METHODS(T)                                          \
-	void Vector_##T##_init  (Vector_##T *vector)                                       \
-	{                                                                                  \
-		vector->array    = NULL;                                                       \
-		vector->length   = 0;                                                          \
-		vector->capacity = 0;                                                          \
-	}                                                                                  \
-	                                                                                   \
-	bool Vector_##T##_resize(Vector_##T *vector)                                       \
-	{                                                                                  \
-		vector->capacity = vector->capacity == 0 ? 1 : vector->capacity * 2;           \
-		vector->array    = realloc(vector->array, vector->capacity * sizeof(T));       \
-		                                                                               \
-		if (vector->array == NULL)                                                     \
-		{                                                                              \
-			const char *desc = strerror(errno);                                        \
-			errorf("failure reallocating memory\n[%c%s]", tolower(desc[0]), &desc[1]); \
-			                                                                           \
-			return true;                                                               \
-		}                                                                              \
-		                                                                               \
-		return false;                                                                  \
-	}                                                                                  \
-	                                                                                   \
-	bool Vector_##T##_append(Vector_##T *vector, const T item)                         \
-	{                                                                                  \
-		if (vector->length == vector->capacity)                                        \
-			if (Vector_##T##_resize(vector))                                           \
-				return true;                                                           \
-		                                                                               \
-		vector->array[vector->length++] = item;                                        \
-		return false;                                                                  \
-	}                                                                                  \
+#include "../output.h" // errorf
 
-// ! NONITERATIVE VECTOR METHODS DONT CALL CONSTRUCTORS OR
-// ! DESTRUCTORS ON IT'S ITEMS
+//
+// note: which members are declared in which macros in vector.h
+// differs from which members are declared in which macros here
+//
+// eg. void Vector_##_T_##_deinit(Vector_##_T_ *vector);
+//
+//     > in vector.h, declared in VECTOR_T_UNIVERSAL_MEMBERS
+//
+//     > in vector.c, declared in DECLARE_PRIMITIVE_VECTOR_T and
+//                                DECLARE_DEVELOPED_VECTOR_T because
+//
+//     although the function signatures are the same the way each is
+//     implemented depending on the vector type is different
+//
 
-// ! USED IN VECTORS OF PRIMITIVE DATATYPES AND CLASSES WITHOUT
-// ! CONSTRUCTORS AND DESTRUCTORS
+#define DEFINE_UNIVERSAL_VECTOR_T(_T_)                                                \
+	                                                                                  \
+	void Vector_##_T_##_init  (Vector_##_T_ *vector)                                  \
+	{                                                                                 \
+		vector->array    = NULL;                                                      \
+		vector->length   = 0;                                                         \
+		vector->capacity = 0;                                                         \
+	}                                                                                 \
+	                                                                                  \
+	bool Vector_##_T_##_resize(Vector_##_T_ *this)                                    \
+	{                                                                                 \
+		this->capacity = this->capacity == 0 ? 1 : this->capacity * 2;                \
+		_T_ *new_array = realloc(this->array, this->capacity * sizeof(_T_));          \
+		                                                                              \
+		if (new_array == NULL)                                                        \
+		{                                                                             \
+			const char *err = strerror(errno);                                        \
+			errorf("failure reallocating memory \n[%c%s]", tolower(err[0]), &err[1]); \
+																					  \
+			return true;                                                              \
+		}                                                                             \
+		                                                                              \
+		this->array = new_array;                                                      \
+		return false;                                                                 \
+	}                                                                                 \
+	                                                                                  \
+	/* the only difference between primitive vector append and */                     \
+	/* developed vector append is whether item is const or not */                     \
+	/* so only one implementation is needed and it is const to */                     \
+	/* be able to work with any one of them */                                        \
+	                                                                                  \
+	bool Vector_##_T_##_append(Vector_##_T_ *this, const _T_ item)                    \
+	{                                                                                 \
+		if (this->length == this->capacity)                                           \
+			 if (Vector_##_T_##_resize(this))                                         \
+			 	return true;                                                          \
+		                                                                              \
+		this->array[this->length++] = item;                                           \
+	}                                                                                 \
 
-// ! eg. DEFINE_NONITERATIVE_VECTOR_METHODS(int)
+// !
+// ! USE ON PRIMITIVE DATATYPES
+// ! eg. DECLARE_PRIMITIVE_VECTOR_T(int)
+// !
 
-#define DEFINE_NONITERATIVE_VECTOR_METHODS(T)                  \
-	void Vector_##T##_deinit(Vector_##T *vector)               \
-	{                                                          \
-		free(vector->array);                                   \
-		                                                       \
-		vector->length   = 0;                                  \
-		vector->capacity = 0;                                  \
-	}                                                          \
+#define DEFINE_PRIMITIVE_VECTOR_T(_T_)                                                \
+	                                                                                  \
+	DEFINE_UNIVERSAL_VECTOR_T(_T_)                                                    \
+	                                                                                  \
+	void Vector_##_T_##_deinit(Vector_##_T_ *this)                                    \
+	{                                                                                 \
+		free(this->array);                                                            \
+		                                                                              \
+		this->array    = NULL;                                                        \
+		this->length   = 0;                                                           \
+		this->capacity = 0;                                                           \
+	}                                                                                 \
+	                                                                                  \
+	bool Vector_##_T_##_has   (const Vector_##_T_ *this, _T_ item)                    \
+	{                                                                                 \
+		for (size_t i = 0; i < this->length; i++)                                     \
+			if (this->array[i] == item)                                               \
+				return true;                                                          \
+		                                                                              \
+		return false;                                                                 \
+	}                                                                                 \
+	                                                                                  \
+	bool Vector_##_T_##_eq    (const Vector_##_T_ *this, const Vector_##_T_ *vector)  \
+	{                                                                                 \
+		if (this->length != vector->length)                                           \
+			return false;                                                             \
+		                                                                              \
+		for (size_t i = 0; i < this->length; i++)                                     \
+			if (this->array[i] != vector->array[i])                                   \
+				return false;                                                         \
+		                                                                              \
+		return true;                                                                  \
+	}                                                                                 \
 
-// ! IS_ITERATIVE VECTOR METHODS CALL CONSTRUCTORS AND
-// ! DESTRUCTORS ON IT'S ITEMS
+// !
+// ! USE ON STRUCTS AND DEFINE THE FOLLOWING METHODS WHERE X IS THE STRUCT NAME
+// !
+// ! void X_deinit(X *)       :  destructor
+// ! bool X_eq    (X *, X *)  :  operator==
+// !
 
-// ! USED IN VECTORS OF CLASSES THAT USE CONSTRUCTORS AND
-// ! DESTRUCTORS
+#define DEFINE_DEVELOPED_VECTOR_T(_T_)                                                \
+	                                                                                  \
+	DEFINE_UNIVERSAL_VECTOR_T(_T_)                                                    \
+		                                                                              \
+	void Vector_##_T_##_deinit(Vector_##_T_ *this)                                    \
+	{                                                                                 \
+		for (size_t i = 0; i < this->length; i++)                                     \
+			_T_##_deinit(&this->array[i]);                                            \
+		                                                                              \
+		free(this->array);                                                            \
+		                                                                              \
+		this->array    = NULL;                                                        \
+		this->length   = 0;                                                           \
+		this->capacity = 0;                                                           \
+	}                                                                                 \
+	                                                                                  \
+	bool Vector_##_T_##_has   (const Vector_##_T_ *this, const _T_ *item)             \
+	{                                                                                 \
+		for (size_t i = 0; i < this->length; i++)                                     \
+			if (_T_##_eq(&this->array[i], item))                                      \
+				return true;                                                          \
+		                                                                              \
+		return false;                                                                 \
+	}                                                                                 \
+	                                                                                  \
+	bool Vector_##_T_##_eq    (const Vector_##_T_ *this, const Vector_##_T_ *vector)  \
+	{                                                                                 \
+		if (this->length != vector->length)                                           \
+			return false;                                                             \
+		                                                                              \
+		for (size_t i = 0; this->length; i++)                                         \
+			if (!_T_##_eq(&this->array[i], &vector->array[i]))                        \
+				return false;                                                         \
+		                                                                              \
+		return true;                                                                  \
+	}                                                                                 \
 
-// ! eg. DEFINE_IS_ITERATIVE_VECTOR_METHODS(Token)
+// ! DECLARATIONS
 
-#define DEFINE_IS_ITERATIVE_VECTOR_METHODS(T)                  \
-	void Vector_##T##_deinit(Vector_##T *vector)               \
-	{                                                          \
-		for (size_t i = 0; i < vector->length; i++)            \
-			T##_deinit(&vector->array[i]);                     \
-		                                                       \
-		free(vector->array);                                   \
-		                                                       \
-		vector->length   = 0;                                  \
-		vector->capacity = 0;                                  \
-	}                                                          \
+#include "../output.h" // Vector_int
+#include "string.h"    // Vector_char
+#include "../lexer.h"  // Vector_Token Token
 
-// ! GENERIC VECTOR DEFINITIONS
+DEFINE_PRIMITIVE_VECTOR_T(int  )
+DEFINE_PRIMITIVE_VECTOR_T(char )
 
-#include "../lexer.h"                     // Token
-
-DEFINE_IS_UNIVERSAL_VECTOR_METHODS(char ) // for string.h
-DEFINE_NONITERATIVE_VECTOR_METHODS(char )
-
-DEFINE_IS_UNIVERSAL_VECTOR_METHODS(Token)
-DEFINE_IS_ITERATIVE_VECTOR_METHODS(Token)
+DEFINE_DEVELOPED_VECTOR_T(Token)

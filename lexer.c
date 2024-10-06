@@ -6,17 +6,36 @@
 #include <string.h>           // strerror strcmp
 #include <stdbool.h>          // bool true false
 
-#include "error.h"            // errorf
+#include "output.h"           // errorf
 #include "utilities/string.h" // String String_init String_deinit
 
-void Token_init  (Token *token)
+void Token_init  (Token *this)
 {
-	String_init  (&token->data);
+	String_init  (&this->data);
 }
 
-void Token_deinit(Token *token)
+void Token_deinit(Token *this)
 {
-	String_deinit(&token->data);
+	String_deinit(&this->data);
+}
+
+bool Token_eq    (const Token *this, const Token *token)
+{
+	if (this->kind != token->kind)
+		return false;
+
+	// handle cases with data
+
+	switch (token->kind)
+	{
+	case Token_Kind_ident:
+	case Token_Kind_intlt:
+	case Token_Kind_strlt:
+		if (!String_eq(&this->data, &token->data))
+			return false;
+	}
+
+	return true;
 }
 
 bool tokenize(Vector_Token *tokens, FILE *file)
@@ -112,11 +131,11 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 
 			if (ferror(file)) goto handle_ferror;
 
-			if      (String_eq(&token.data, "int"))
+			if      (String_eq_cstr(&token.data, "int"))
 				token.kind = Token_Kind_keywd_int;
-			else if (String_eq(&token.data, "void"))
+			else if (String_eq_cstr(&token.data, "void"))
 				token.kind = Token_Kind_keywd_void;
-			else if (String_eq(&token.data, "return"))
+			else if (String_eq_cstr(&token.data, "return"))
 				token.kind = Token_Kind_keywd_return;
 			else
 				token.kind = Token_Kind_ident;
