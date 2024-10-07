@@ -25,7 +25,7 @@ int printf(const char *__restrict format, ...)
 	// TODO: implement formatting and varargs
 	// TODO: look into moving GetStdHandle into the global scope
 
-	DWORD count;
+	DWORD  count;
 
 	HANDLE handle  = GetStdHandle(STD_OUTPUT_HANDLE);
 	BOOL   success = WriteConsoleA(handle, format, strlen(format), &count, NULL);
