@@ -1,47 +1,94 @@
-// TODO: investigate using C23 nullptr instead of NULL across all files
-// TODO: investigate using C99 restrict where applicable across all files
+#include <stdio.h>        // FILE fopen fclose tmpfile
+#include <locale.h>       // NULL
+#include <stdlib.h>       // EXIT_SUCCESS EXIT_FAILURE
+#include <stdbool.h>      // bool true false
 
-#include <ctype.h>  // tolower
-#include <errno.h>  // errno
-#include <stdio.h>  // FILE fopen fclose
-#include <locale.h> // NULL
-#include <stdlib.h> // EXIT_SUCCESS EXIT_FAILURE
-#include <string.h> // strerror
+#include "error.h"        // errorf errnof
+#include "shell.h"        // shellf Vector_int_* Shell_Mark_*
+#include "lexer.h"        // tokenize
+#include "preprocessor.h" // preprocess
 
-#include "lexer.h"  // tokenize
-#include "error.h"  // errorf
-#include "shell.h"  // shellf Vector_int_* Shell_Mark_*
+#include "errormessage.h" // failure_opening_src_file
+                          // failure_closing_src_file
+						  // failure_getting_tmp_file
+						  // failure_closing_tmp_file
 
 int main(int argc, char *argv[])
 {
 	if (argc < 2 || argc > 2)
 	{
-		Vector_int indices;
-		Vector_int_create(&indices);
-		Vector_int_append(&indices, 0);
-
 		errorf("expected 1 argument and received %i", argc - 1);
-		shellf(argc, argv, &indices, Shell_Mark_other_indices);
-
-		Vector_int_deinit(&indices);
+		shellf(argc, argv, Shell_Mark_other_indices, 1, 0);
 
 		return EXIT_FAILURE;
 	}
 
-	FILE *file = fopen(argv[1], "r");
+	FILE *src_file = fopen(argv[1], "r");
 
-	if (file == NULL)
+	if (src_file == NULL)
 	{
-		const char *desc = strerror(errno);
-		errorf("failure opening source file\n[%c%s]", tolower(desc[0]), &desc[1]);
+		errnof(failure_opening_src_file);
+		shellf(argc, argv, Shell_Mark_given_indices, 1, 1);
 
 		return EXIT_FAILURE;
 	}
+
+	// driver
+
+	bool failure;
+	FILE *tmp_file = tmpfile();
+
+	if (tmp_file == NULL)
+	{
+		errnof(failure_getting_tmp_file);
+
+		if (fclose(src_file))
+		{
+			errnof(failure_closing_src_file);
+			shellf(argc, argv, Shell_Mark_given_indices, 1, 1);
+		}
+
+		return EXIT_FAILURE;
+	}
+
+	// preprocessor
+
+	failure = preprocess(tmp_file, src_file);
+
+	if (fclose(src_file))
+	{
+		errnof(failure_closing_src_file);
+		shellf(argc, argv, Shell_Mark_given_indices, 1, 1);
+
+		if (fclose(tmp_file))
+			errnof(failure_closing_tmp_file);
+
+		return EXIT_FAILURE;
+	}
+
+	if (failure)
+	{
+		if (fclose(tmp_file))
+			errnof(failure_closing_tmp_file);
+
+		return EXIT_FAILURE;
+	}
+
+	// tokenization
 
 	Vector_Token tokens;
 	Vector_Token_create(&tokens);
 
-	if (tokenize(&tokens, file))
+	failure = tokenize(&tokens, tmp_file);
+
+	if (fclose(tmp_file))
+	{
+		Vector_Token_deinit(&tokens);
+		errnof(failure_closing_tmp_file);
+		return EXIT_FAILURE;
+	}
+
+	if (failure)
 	{
 		Vector_Token_deinit(&tokens);
 		return EXIT_FAILURE;
@@ -57,14 +104,6 @@ int main(int argc, char *argv[])
 	// end
 
 	Vector_Token_deinit(&tokens);
-
-	if (fclose(file))
-	{
-		const char *desc = strerror(errno);
-		errorf("failure closing source file\n[%c%s]", tolower(desc[0]), &desc[1]);
-
-		return EXIT_FAILURE;
-	}
 
 	printf("\nSuccess!\n");
 

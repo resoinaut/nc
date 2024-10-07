@@ -1,0 +1,4 @@
+* investigate using C23 nullptr instead of NULL where applicable
+* investigate using C99 restrict where applicable
+* move all error messages to errormessage.h
+* consider reworking error handling

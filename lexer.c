@@ -1,12 +1,12 @@
 #include "lexer.h"            // header
 
 #include <ctype.h>            // isalpha isalnum
-#include <errno.h>            // errno
 #include <stdio.h>            // EOF FILE getc
-#include <string.h>           // strerror strcmp
+#include <string.h>           // strcmp
 #include <stdbool.h>          // bool true false
 
-#include "error.h"            // errorf
+#include "error.h"            // errorf errnof
+#include "errormessage.h"     // failure_reading_tmp_file
 #include "utilities/string.h" // String_*
 
 void Token_create(Token *this)
@@ -82,18 +82,14 @@ bool Token_eq    (const Token *this, const Token *token)
 
 bool tokenize(Vector_Token *tokens, FILE *file)
 {
-	#define APPEND_TOKEN                        \
+	#define APPEND_TOKEN()                      \
 		if (Vector_Token_append(tokens, token)) \
 			return true;                        \
 
 	int ch;
 
-	int i = -1;
-
 	while ((ch = getc(file)) != EOF)
 	{
-		i++;
-
 		if (isspace(ch))
 			continue;
 
@@ -123,34 +119,34 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 			// broke out of loop
 
 			token.kind = Token_Kind_strlt;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 
 		// delimiters
 
 		case ';':
 			token.kind = Token_Kind_semic;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 
 		case '{':
 			token.kind = Token_Kind_curly_opened;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 
 		case '}':
 			token.kind = Token_Kind_curly_closed;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 
 		case '(':
 			token.kind = Token_Kind_paren_opened;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 
 		case ')':
 			token.kind = Token_Kind_paren_closed;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 			continue;
 		}
 
@@ -186,7 +182,7 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 			else
 				token.kind = Token_Kind_ident;
 
-			APPEND_TOKEN
+			APPEND_TOKEN()
 
 			continue;
 		}
@@ -213,7 +209,7 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 			if (ferror(file)) goto handle_ferror;
 
 			token.kind = Token_Kind_intlt;
-			APPEND_TOKEN
+			APPEND_TOKEN()
 
 			continue;
 		}
@@ -229,9 +225,7 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 	{
 		handle_ferror:
 
-		const char *desc = strerror(errno);
-		errorf("failure reading source file\n[%c%s]", tolower(desc[0]), &desc[1]);
-
+		errnof(failure_reading_tmp_file);
 		return true;
 	}
 
