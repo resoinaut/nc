@@ -45,7 +45,7 @@
 		size_t capacity;                                                              \
 	} Vector_##_T_;                                                                   \
 	                                                                                  \
-	void Vector_##_T_##_init  (Vector_##_T_ *this);                                   \
+	void Vector_##_T_##_create(Vector_##_T_ *this);                                   \
 	void Vector_##_T_##_deinit(Vector_##_T_ *this);                                   \
 	                                                                                  \
 	/* returns true on failure in which case destructor must still be called */       \

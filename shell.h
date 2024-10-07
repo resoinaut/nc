@@ -10,5 +10,4 @@ typedef enum Shell_Mark
 	Shell_Mark_other_indices,
 } Shell_Mark;
 
-void errorf(const char *error, ...);
 void shellf(int argc, char *argv[], const Vector_int *indices, Shell_Mark mark_rule);

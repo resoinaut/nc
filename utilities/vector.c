@@ -2,17 +2,17 @@
 // ! ALL VECTOR DECLARATIONS MUST ALSO BE DECLARED IN vector.h
 // !
 
-#include "vector.h"    // header
+#include "vector.h"   // header
 
-#include <ctype.h>     // tolower
-#include <errno.h>     // errno
-#include <locale.h>    // NULL
-#include <stddef.h>    // size_t
-#include <stdlib.h>    // realloc free
-#include <string.h>    // strerror
-#include <stdbool.h>   // bool true false
+#include <ctype.h>    // tolower
+#include <errno.h>    // errno
+#include <locale.h>   // NULL
+#include <stddef.h>   // size_t
+#include <stdlib.h>   // realloc free
+#include <string.h>   // strerror
+#include <stdbool.h>  // bool true false
 
-#include "../output.h" // errorf
+#include "../error.h" // errorf
 
 //
 // note: which members are declared in which macros in vector.h
@@ -31,7 +31,7 @@
 
 #define DEFINE_UNIVERSAL_VECTOR_T(_T_)                                                \
 	                                                                                  \
-	void Vector_##_T_##_init  (Vector_##_T_ *vector)                                  \
+	void Vector_##_T_##_create(Vector_##_T_ *vector)                                  \
 	{                                                                                 \
 		vector->array    = NULL;                                                      \
 		vector->length   = 0;                                                         \
@@ -67,6 +67,7 @@
 			 	return true;                                                          \
 		                                                                              \
 		this->array[this->length++] = item;                                           \
+		return false;                                                                 \
 	}                                                                                 \
 
 // !
@@ -154,7 +155,7 @@
 
 // ! DECLARATIONS
 
-#include "../output.h" // Vector_int
+#include "../shell.h"  // Vector_int
 #include "string.h"    // Vector_char
 #include "../lexer.h"  // Vector_Token Token
 

@@ -9,15 +9,13 @@ DECLARE_PRIMITIVE_VECTOR_T(char)
 
 typedef Vector_char String;
 
-void String_init  (String *this);
-void String_deinit(String *this);
+// note: String_resize not necessary
 
-bool String_resize(String *this);
-bool String_append(String *this, char ch);
-
-bool String_has(const String *this, char ch);
-
-bool String_eq(const String *this, const String *string);
+#define String_create Vector_char_create
+#define String_deinit Vector_char_deinit
+#define String_append Vector_char_append
+#define String_has    Vector_char_has
+#define String_eq     Vector_char_eq
 
 // extra methods
 

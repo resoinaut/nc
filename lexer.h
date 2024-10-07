@@ -38,9 +38,11 @@ typedef struct Token
 	Token_Kind kind;
 } Token;
 
-void Token_init  (Token *this);
+void Token_create(Token *this);
 void Token_deinit(Token *this);
 bool Token_eq    (const Token *this, const Token *token);
+
+void Token_print(const Token *token);
 
 DECLARE_DEVELOPED_VECTOR_T(Token)
 

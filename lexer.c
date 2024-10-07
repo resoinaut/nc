@@ -6,17 +6,59 @@
 #include <string.h>           // strerror strcmp
 #include <stdbool.h>          // bool true false
 
-#include "output.h"           // errorf
-#include "utilities/string.h" // String String_init String_deinit
+#include "error.h"            // errorf
+#include "utilities/string.h" // String_*
 
-void Token_init  (Token *this)
+void Token_create(Token *this)
 {
-	String_init  (&this->data);
+	String_create(&this->data);
 }
 
 void Token_deinit(Token *this)
 {
 	String_deinit(&this->data);
+}
+
+void Token_print(const Token *token)
+{
+	switch (token->kind)
+	{
+	case Token_Kind_ident:
+		printf("ident %.*s", token->data.length, token->data.array);
+		break;
+	case Token_Kind_keywd_int:
+		printf("keywd int");
+		break;
+	case Token_Kind_keywd_void:
+		printf("keywd void");
+		break;
+	case Token_Kind_keywd_return:
+		printf("keywd return");
+		break;
+	case Token_Kind_intlt:
+		printf("intlt %.*s", token->data.length, token->data.array);
+		break;
+	case Token_Kind_strlt:
+		printf("strlt %.*s", token->data.length, token->data.array);
+		break;
+	case Token_Kind_semic:
+		printf("delim ;");
+		break;
+	case Token_Kind_curly_opened:
+		printf("delim {");
+		break;
+	case Token_Kind_curly_closed:
+		printf("delim }");
+		break;
+	case Token_Kind_paren_opened:
+		printf("delim (");
+		break;
+	case Token_Kind_paren_closed:
+		printf("delim )");
+		break;
+	}
+
+	putchar('\n');
 }
 
 bool Token_eq    (const Token *this, const Token *token)
@@ -46,13 +88,17 @@ bool tokenize(Vector_Token *tokens, FILE *file)
 
 	int ch;
 
+	int i = -1;
+
 	while ((ch = getc(file)) != EOF)
 	{
+		i++;
+
 		if (isspace(ch))
 			continue;
 
 		Token token;
-		Token_init(&token);
+		Token_create(&token);
 
 		// handle symbols
 

@@ -8,15 +8,16 @@
 #include <stdlib.h> // EXIT_SUCCESS EXIT_FAILURE
 #include <string.h> // strerror
 
-#include "lexer.h"   // tokenize
-#include "output.h"  // errorf shellf Vector_int Vector_int_init Vector_int_append Vector_int_deinit
+#include "lexer.h"  // tokenize
+#include "error.h"  // errorf
+#include "shell.h"  // shellf Vector_int_* Shell_Mark_*
 
 int main(int argc, char *argv[])
 {
 	if (argc < 2 || argc > 2)
 	{
 		Vector_int indices;
-		Vector_int_init  (&indices);
+		Vector_int_create(&indices);
 		Vector_int_append(&indices, 0);
 
 		errorf("expected 1 argument and received %i", argc - 1);
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
 	}
 
 	Vector_Token tokens;
-	Vector_Token_init  (&tokens);
+	Vector_Token_create(&tokens);
 
 	if (tokenize(&tokens, file))
 	{
@@ -48,54 +49,12 @@ int main(int argc, char *argv[])
 
 	// temporary
 
-	for (size_t i = 0; i < tokens.length; i++)
-	{
-		Token token = tokens.array[i];
-
-		putchar('\n');
-
-		switch (token.kind)
-		{
-		case Token_Kind_ident:
-			printf("ident %.*s", token.data.length, token.data.array);
-			break;
-		case Token_Kind_keywd_int:
-			printf("keywd int");
-			break;
-		case Token_Kind_keywd_void:
-			printf("keywd void");
-			break;
-		case Token_Kind_keywd_return:
-			printf("keywd return");
-			break;
-		case Token_Kind_intlt:
-			printf("intlt %.*s", token.data.length, token.data.array);
-			break;
-		case Token_Kind_strlt:
-			printf("strlt %.*s", token.data.length, token.data.array);
-			break;
-		case Token_Kind_semic:
-			printf("delim ;");
-			break;
-		case Token_Kind_curly_opened:
-			printf("delim {");
-			break;
-		case Token_Kind_curly_closed:
-			printf("delim }");
-			break;
-		case Token_Kind_paren_opened:
-			printf("delim (");
-			break;
-		case Token_Kind_paren_closed:
-			printf("delim )");
-			break;
-		default:
-			printf("unrecognised token");
-			break;
-		}
-	}
-
 	putchar('\n');
+
+	for (size_t i = 0; i < tokens.length; i++)
+		Token_print(&tokens.array[i]);
+
+	// end
 
 	Vector_Token_deinit(&tokens);
 
