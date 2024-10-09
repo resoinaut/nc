@@ -12,4 +12,5 @@ typedef enum Shell_Mark
 	Shell_Mark_other_indices,
 } Shell_Mark;
 
+// returns true on failure
 bool shellf(int argc, char *argv[], Shell_Mark mark_rule, size_t index_count, ...);

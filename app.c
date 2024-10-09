@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
 	// driver
 
-	bool failure;
+	int   failure;
 	FILE *tmp_file = tmpfile();
 
 	if (tmp_file == NULL)
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
 	// preprocessor
 
-	failure = preprocess(tmp_file, src_file);
+	failure = preprocess(tmp_file, src_file, argv[1]);
 
 	if (fclose(src_file))
 	{
@@ -73,6 +73,13 @@ int main(int argc, char *argv[])
 
 		return EXIT_FAILURE;
 	}
+
+	printf("\n------\n");
+	int ch;
+	while ((ch = getc(tmp_file)) != EOF)
+		putchar(ch);
+	rewind(tmp_file);
+	printf("\n------");
 
 	// tokenization
 

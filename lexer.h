@@ -46,4 +46,5 @@ void Token_print(const Token *token);
 
 DECLARE_DEVELOPED_VECTOR_T(Token)
 
-bool tokenize(Vector_Token *tokens, FILE *file);
+// returns true on failure
+int tokenize(Vector_Token *tokens, FILE *file);

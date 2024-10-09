@@ -2,3 +2,8 @@
 * investigate using C99 restrict where applicable
 * move all error messages to errormessage.h
 * consider reworking error handling
+* distinguish between errors in code and "fatal" errors, errors in execution
+* finish switching _T_ to T in generic vector
+* clean code up and search for memory leaks such as when using TRY macro!
+* consider the return values of all functions, such as fprintf, etc!
+* document all functions

@@ -26,44 +26,54 @@
 //     implemented depending on the vector type is different
 //
 
-#define DEFINE_UNIVERSAL_VECTOR_T(_T_)                                               \
-	                                                                                 \
-	void Vector_##_T_##_create(Vector_##_T_ *vector)                                 \
-	{                                                                                \
-		vector->array    = NULL;                                                     \
-		vector->length   = 0;                                                        \
-		vector->capacity = 0;                                                        \
-	}                                                                                \
-	                                                                                 \
-	bool Vector_##_T_##_resize(Vector_##_T_ *this)                                   \
-	{                                                                                \
-		this->capacity = this->capacity == 0 ? 1 : this->capacity * 2;               \
-		_T_ *new_array = realloc(this->array, this->capacity * sizeof(_T_));         \
-		                                                                             \
-		if (new_array == NULL)                                                       \
-		{                                                                            \
-			errnof("failure reallocating memory");                                   \
-			return true;                                                             \
-		}                                                                            \
-		                                                                             \
-		this->array = new_array;                                                     \
-		return false;                                                                \
-	}                                                                                \
-	                                                                                 \
-	/* the only difference between primitive vector append and */                    \
-	/* developed vector append is whether item is const or not */                    \
-	/* so only one implementation is needed and it is const to */                    \
-	/* be able to work with any one of them */                                       \
-	                                                                                 \
-	bool Vector_##_T_##_append(Vector_##_T_ *this, const _T_ item)                   \
-	{                                                                                \
-		if (this->length == this->capacity)                                          \
-			 if (Vector_##_T_##_resize(this))                                        \
-			 	return true;                                                         \
-		                                                                             \
-		this->array[this->length++] = item;                                          \
-		return false;                                                                \
-	}                                                                                \
+#define DEFINE_UNIVERSAL_VECTOR_T(T)                                               \
+	                                                                               \
+	void Vector_##T##_create(Vector_##T *vector)                                   \
+	{                                                                              \
+		vector->array    = NULL;                                                   \
+		vector->length   = 0;                                                      \
+		vector->capacity = 0;                                                      \
+	}                                                                              \
+	                                                                               \
+	Slice_##T Vector_##T##_slice(const Vector_##T *this, size_t start, size_t end) \
+	{                                                                              \
+		Slice_##T slice;                                                           \
+		                                                                           \
+		slice.array  = &this->array[start];                                        \
+		slice.length = (end == -1 ? this->length : end) - start;                   \
+		                                                                           \
+		return slice;                                                              \
+	}                                                                              \
+	                                                                               \
+	bool Vector_##T##_resize(Vector_##T *this)                                     \
+	{                                                                              \
+		this->capacity = this->capacity == 0 ? 1 : this->capacity * 2;             \
+		T *new_array = realloc(this->array, this->capacity * sizeof(T));           \
+		                                                                           \
+		if (new_array == NULL)                                                     \
+		{                                                                          \
+			errnof("failure reallocating memory");                                 \
+			return true;                                                           \
+		}                                                                          \
+		                                                                           \
+		this->array = new_array;                                                   \
+		return false;                                                              \
+	}                                                                              \
+	                                                                               \
+	/* the only difference between primitive vector append and */                  \
+	/* developed vector append is whether item is const or not */                  \
+	/* so only one implementation is needed and it is const to */                  \
+	/* be able to work with any one of them */                                     \
+	                                                                               \
+	bool Vector_##T##_append(Vector_##T *this, const T item)                       \
+	{                                                                              \
+		if (this->length == this->capacity)                                        \
+			 if (Vector_##T##_resize(this))                                        \
+			 	return true;                                                       \
+		                                                                           \
+		this->array[this->length++] = item;                                        \
+		return false;                                                              \
+	}                                                                              \
 
 // !
 // ! USE ON PRIMITIVE DATATYPES
@@ -81,6 +91,11 @@
 		this->array    = NULL;                                                       \
 		this->length   = 0;                                                          \
 		this->capacity = 0;                                                          \
+	}                                                                                \
+	                                                                                 \
+	void Vector_##_T_##_clear (Vector_##_T_ *this)                                   \
+	{                                                                                \
+		this->length = 0;                                                            \
 	}                                                                                \
 	                                                                                 \
 	bool Vector_##_T_##_has   (const Vector_##_T_ *this, _T_ item)                   \
@@ -127,6 +142,14 @@
 		this->capacity = 0;                                                          \
 	}                                                                                \
 	                                                                                 \
+	void Vector_##_T_##_clear (Vector_##_T_ *this)                                   \
+	{                                                                                \
+		for (size_t i = 0; i < this->length; i++)                                    \
+			_T_##_deinit(&this->array[i]);                                           \
+		                                                                             \
+		this->length = 0;                                                            \
+	}                                                                                \
+	                                                                                 \
 	bool Vector_##_T_##_has   (const Vector_##_T_ *this, const _T_ *item)            \
 	{                                                                                \
 		for (size_t i = 0; i < this->length; i++)                                    \
@@ -150,11 +173,14 @@
 
 // ! DECLARATIONS
 
-#include "../shell.h"  // Vector_int
-#include "string.h"    // Vector_char
-#include "../lexer.h"  // Vector_Token Token
+#include "../shell.h"        // Vector_int
+#include "string.h"          // Vector_char
+
+#include "../lexer.h"        // Vector_Token Token_*
+#include "../preprocessor.h" // Vector_String String_*
 
 DEFINE_PRIMITIVE_VECTOR_T(int  )
 DEFINE_PRIMITIVE_VECTOR_T(char )
 
 DEFINE_DEVELOPED_VECTOR_T(Token)
+DEFINE_DEVELOPED_VECTOR_T(String)

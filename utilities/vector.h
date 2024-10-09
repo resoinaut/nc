@@ -35,37 +35,49 @@
 // }
 //
 
-#define DECLARE_UNIVERSAL_VECTOR_T(_T_)                                               \
-	                                                                                  \
-	typedef struct Vector_##_T_                                                       \
-	{                                                                                 \
-		_T_   *array;                                                                 \
-    	                                                                              \
-		size_t length;                                                                \
-		size_t capacity;                                                              \
-	} Vector_##_T_;                                                                   \
-	                                                                                  \
-	void Vector_##_T_##_create(Vector_##_T_ *this);                                   \
-	void Vector_##_T_##_deinit(Vector_##_T_ *this);                                   \
-	                                                                                  \
-	/* returns true on failure in which case destructor must still be called */       \
-	bool Vector_##_T_##_resize(Vector_##_T_ *this);                                   \
-	                                                                                  \
-	bool Vector_##_T_##_eq    (const Vector_##_T_ *this, const Vector_##_T_ *vector); \
+#define DECLARE_UNIVERSAL_VECTOR_T(_T_)                                                       \
+	                                                                                          \
+	typedef struct Slice_##_T_                                                                \
+	{                                                                                         \
+		_T_   *array;                                                                         \
+		                                                                                      \
+		size_t length;                                                                        \
+	} Slice_##_T_;                                                                            \
+	                                                                                          \
+	typedef struct Vector_##_T_                                                               \
+	{                                                                                         \
+		_T_   *array;                                                                         \
+    	                                                                                      \
+		size_t length;                                                                        \
+		size_t capacity;                                                                      \
+	} Vector_##_T_;                                                                           \
+	                                                                                          \
+	void Vector_##_T_##_create(Vector_##_T_ *this);                                           \
+	void Vector_##_T_##_deinit(Vector_##_T_ *this);                                           \
+	                                                                                          \
+	void Vector_##_T_##_clear (Vector_##_T_ *this);                                           \
+	                                                                                          \
+	/* returned slice is a reference; not a copy. end = -1 indicates rest */                  \
+	Slice_##_T_ Vector_##_T_##_slice(const Vector_##_T_ *this, size_t start, size_t end);     \
+	                                                                                          \
+	/* returns 0 on success and 1 on failure in which case destructor must still be called */ \
+	bool Vector_##_T_##_resize(Vector_##_T_ *this);                                           \
+	                                                                                          \
+	bool Vector_##_T_##_eq    (const Vector_##_T_ *this, const Vector_##_T_ *vector);         \
 
 // !
 // ! USE ON PRIMITIVE DATATYPES
 // ! eg. DECLARE_PRIMITIVE_VECTOR_T(int)
 // !
 
-#define DECLARE_PRIMITIVE_VECTOR_T(_T_)                                               \
-	                                                                                  \
-	DECLARE_UNIVERSAL_VECTOR_T(_T_)                                                   \
-	                                                                                  \
-	/* returns true on failure in which case destructor must still be called */       \
-	bool Vector_##_T_##_append(      Vector_##_T_ *this, _T_ item);                   \
-	                                                                                  \
-	bool Vector_##_T_##_has   (const Vector_##_T_ *this, _T_ item);                   \
+#define DECLARE_PRIMITIVE_VECTOR_T(_T_)                                                       \
+	                                                                                          \
+	DECLARE_UNIVERSAL_VECTOR_T(_T_)                                                           \
+	                                                                                          \
+	/* returns 0 on success and 1 on failure in which case destructor must still be called */ \
+	bool Vector_##_T_##_append(      Vector_##_T_ *this, _T_ item);                           \
+	                                                                                          \
+	bool Vector_##_T_##_has   (const Vector_##_T_ *this, _T_ item);                           \
 
 // !
 // ! USE ON STRUCTS AND DEFINE THE FOLLOWING METHODS WHERE X IS THE STRUCT NAME
@@ -74,12 +86,12 @@
 // ! bool X_eq    (X *, X *)  :  operator==
 // !
 
-#define DECLARE_DEVELOPED_VECTOR_T(_T_)                                               \
-	                                                                                  \
-	DECLARE_UNIVERSAL_VECTOR_T(_T_)                                                   \
-	                                                                                  \
-	bool Vector_##_T_##_append(      Vector_##_T_ *this, const _T_  item);            \
-	                                                                                  \
-	bool Vector_##_T_##_has   (const Vector_##_T_ *this, const _T_ *item);            \
+#define DECLARE_DEVELOPED_VECTOR_T(_T_)                                                       \
+	                                                                                          \
+	DECLARE_UNIVERSAL_VECTOR_T(_T_)                                                           \
+	                                                                                          \
+	bool Vector_##_T_##_append(      Vector_##_T_ *this, const _T_  item);                    \
+	                                                                                          \
+	bool Vector_##_T_##_has   (const Vector_##_T_ *this, const _T_ *item);                    \
 
 // comment prevents `backslash-newline at end of file` warning
